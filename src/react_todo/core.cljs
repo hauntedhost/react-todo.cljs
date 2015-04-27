@@ -1,26 +1,33 @@
 (ns ^:figwheel-always react-todo.core
-  (:require [reagent.core :as ra]))
+  (:require [cljs-uuid-utils.core :as uuid]
+            [reagent.core :as ra]))
 
 (enable-console-print!)
 
 (println "welcome! 吃饭了吗?")
 
+(defn uuid-str []
+  (uuid/uuid-string (uuid/make-random-uuid)))
+
+(defn content-with-id [content]
+  { :id (uuid-str)
+    :content content })
+
 ;; define your app data so that it doesn't get over-written on reload
-(defonce app-state (atom {:items ["practice 普通话"
-                                  "inbox zero"]}))
+(defonce app-state
+  (atom {:items (map content-with-id ["practice 普通话" "inbox zero"])}))
 
 (defn add-todo [todo]
   (swap! app-state dissoc :form-field)
   (swap! app-state (fn [data]
     (update-in data [:items] (fn [items]
-      (conj items todo))))))
+      (conj items (content-with-id todo)))))))
 
-(defn delete-todo [index]
+(defn delete-todo [todo]
   (swap! app-state
     (fn [data] (update-in data [:items]
       (fn [items]
-        (reduce-kv (fn [a k v]
-          (if (= k index) a (vec (conj a v)))) [] items))))))
+        (remove #(= (:id %) (:id todo)) items))))))
 
 (defn input-change-handler [event]
   (.preventDefault event)
@@ -33,18 +40,17 @@
   (let [new-todo (:form-field @app-state)]
     (add-todo new-todo)))
 
-(defn delete-todo-handler [index event]
+(defn delete-todo-handler [todo event]
   (.preventDefault event)
-  (delete-todo index))
+  (delete-todo todo))
 
-(defn todo-item [index todo]
-  [:li {:key (str "todo_" index)} todo " "
-    [:a {:key (str index)
-         :href "#"
-         :onClick (partial delete-todo-handler index)} "delete"]])
+(defn todo-item [todo]
+  [:li {:key (:id todo)} (:content todo) " "
+    [:a {:href "#"
+         :onClick (partial delete-todo-handler todo)} "delete"]])
 
 (defn todo-list [items]
-  [:ul (map-indexed todo-item items)])
+  [:ul (map todo-item items)])
 
 (defn todo-wrapper [data]
   [:div
