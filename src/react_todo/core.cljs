@@ -1,5 +1,5 @@
 (ns ^:figwheel-always react-todo.core
-    (:require [sablono.core :as sab :include-macros true]))
+  (:require [reagent.core :as ra]))
 
 (enable-console-print!)
 
@@ -44,24 +44,22 @@
          :onClick (partial delete-todo-handler index)} "delete"]])
 
 (defn todo-list [items]
-  (sab/html [:ul
-            (map-indexed todo-item items)]))
+  [:ul (map-indexed todo-item items)])
 
 (defn todo-wrapper [data]
-  (sab/html [:div
-              [:h1 "Todos"]
-              [:form {:onSubmit submit-todo-handler}
-                [:input {:name "todo"
-                         :value (:form-field data)
-                         :onChange input-change-handler}]]
-              (todo-list (:items data))]))
+  [:div
+    [:h1 "Todos"]
+    [:form {:onSubmit submit-todo-handler}
+      [:input {:name "todo"
+               :value (:form-field data)
+               :onChange input-change-handler}]]
+    [todo-list (:items data)]])
 
 (defn render [data]
-  (.render js/React
-           (todo-wrapper data)
-           (.getElementById js/document "app")))
+  (ra/render [todo-wrapper data]
+    (.getElementById js/document "app")))
 
-(defonce adding-app-watch
+(defonce watch-app-state
   (add-watch app-state :on-change
     (fn [_ _ _ new-state]
      (prn new-state)

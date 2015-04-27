@@ -8,7 +8,7 @@
                  [org.clojure/clojurescript "0.0-3165"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [figwheel "0.2.7"]
-                 [sablono "0.3.4"]]
+                 [reagent "0.5.0"]]
 
   :plugins [[lein-cljsbuild "1.0.5"]
             [lein-figwheel "0.2.7"]]
